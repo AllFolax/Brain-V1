@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Bun
+.bun/
+
+# Build artifacts
+dist/
+*.tsbuildinfo
+
+# Logs
+*.log
+logs/
+
+# Local env / secrets
+.env
+.env.*
+!.env.example
+
+# Editor cruft
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Test artifacts (none expected for V1 but defensive)
+coverage/
+.brain-test-tmp/
