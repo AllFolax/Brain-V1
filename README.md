@@ -63,6 +63,88 @@ cd brain-v1
 bun install
 ```
 
+## Freebuff integration (3-line install)
+
+Brain V1 ships a ready-made Freebuff adapter under the subpath
+`@ruben/brain/freebuff`. To add the `/brain` slash command to your Freebuff
+clone — two surgical edits in **one file** (`codebuff/cli/src/commands/command-registry.ts`):
+
+### 1 — Install the package
+
+In your **Freebuff project root** (NOT in `brain-v1/`):
+
+```bash
+bun add @ruben/brain
+```
+
+### 2 — Add the import
+
+In `codebuff/cli/src/commands/command-registry.ts`, add at the top with your
+other imports:
+
+```ts
+import { createFreebuffBrainCommand } from '@ruben/brain/freebuff'
+```
+
+### 3 — Create the adapter + append it to `ALL_COMMANDS`
+
+Just before `ALL_COMMANDS = [...]`:
+
+```ts
+const brainCommand = createFreebuffBrainCommand({
+  cwd: getProjectRoot,                                  // or () => getProjectRoot()
+  chatMessages: () => useChatStore.getState().messages,
+  getSystemMessage,                                     // already imported elsewhere
+  clearInput,                                           // already defined elsewhere
+})
+```
+
+Inside `ALL_COMMANDS`, append at the end:
+
+```ts
+const ALL_COMMANDS: CommandDefinition[] = [
+  // ... existing commands ...
+  brainCommand,
+]
+```
+
+That's 3 lines added (1 import, 1 deps block, 1 array entry). Restart Freebuff
+(`bun run dev:freebuff`) and `/brain` is live.
+
+### Uninstalling
+
+```bash
+bun remove @ruben/brain
+# Then drop the 3 lines from command-registry.ts
+```
+
+`/brain` is gone, no dangling references, zero leftover state in Freebuff.
+
+### How it works
+
+- `createFreebuffBrainCommand(deps)` builds a Freebuff-shaped
+  `CommandDefinition` whose handler internally calls the framework-agnostic
+  `runBrainCommand` from `@ruben/brain`.
+- The `deps` you inject (`cwd`, `chatMessages`, `getSystemMessage`,
+  `clearInput`) are the **only** Freebuff internals Brain needs to push
+  messages into your chat and clear the input field. They are the entire
+  coupling surface.
+- Brain V1 owns **all** the dispatcher logic, the analyzer, the file format,
+  and the slash-command grammar. Freebuff only knows it imported a
+  `brainCommand`.
+- Updating Brain = `bun update @ruben/brain`. Freebuff's `command-registry.ts`
+  does NOT change between Brain versions, unless Freebuff itself changes its
+  `RouterParams` shape (very rare).
+
+### What happens when Freebuff evolves
+
+Brain V1 ships a tiny compatibility test (`__tests__/integrations/freebuff.test.ts`)
+that verifies the produced `CommandDefinition` matches the documented
+structural shape. If you upgrade Freebuff and its `RouterParams` drifts, the
+test will surface the mismatch on your side **before** you see it in a
+runtime error — easy to patch in `brain-v1`'s `freebuff.types.ts` in a
+single PR.
+
 ## Run the tests
 
 ```bash

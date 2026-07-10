@@ -6,7 +6,9 @@
   "description": "Lightweight markdown-based persistent memory for AI assistants (V1, standalone). Framework-agnostic. Zero runtime devDeps beyond Bun and Node stdlib.",
   "exports": {
     ".": "./src/index.ts",
-    "./types": "./src/types.ts"
+    "./types": "./src/types.ts",
+    "./freebuff": "./src/integrations/freebuff.ts",
+    "./freebuff/types": "./src/integrations/freebuff.types.ts"
   },
   "main": "./src/index.ts",
   "types": "./src/index.ts",
